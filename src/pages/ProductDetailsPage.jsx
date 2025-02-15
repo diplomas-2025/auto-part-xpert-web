@@ -136,7 +136,7 @@ const ProductDetailsPage = () => {
                     <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                         <CardMedia
                             component="img"
-                            image={'http://localhost:3000/' + product.image}
+                            image={'https://alum-trade.spotdiff.ru/' + product.image}
                             alt={product.name}
                             sx={{ height: 400, objectFit: "cover" }}
                         />
