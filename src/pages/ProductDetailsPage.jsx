@@ -248,8 +248,6 @@ const ProductDetailsPage = () => {
                         sx={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'cover',
-                            cursor: 'zoom-in',
                             transition: 'transform 0.3s ease'
                         }}
                         onClick={() => setExpandedImage(true)}
@@ -406,7 +404,7 @@ const ProductDetailsPage = () => {
                                     fontSize: '1.1rem'
                                 }}
                             >
-                                Add to Bag
+                                Добавить в корзину
                             </Button>
                         )}
                     </GlassCard>
@@ -426,7 +424,7 @@ const ProductDetailsPage = () => {
                         {!reviews.some(rev => rev.user.id === userId) && (
                             <Box sx={{ mb: 4 }}>
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                                    Share your thoughts
+                                    Поделитесь своими мыслями
                                 </Typography>
                                 <Rating
                                     value={newReview.rating}
@@ -441,7 +439,7 @@ const ProductDetailsPage = () => {
                                     multiline
                                     rows={4}
                                     variant="outlined"
-                                    placeholder="What do you think about this product?"
+                                    placeholder="Что вы думаете об этом продукте?"
                                     value={newReview.comment}
                                     onChange={handleCommentChange}
                                     sx={{ mb: 2 }}
@@ -456,7 +454,7 @@ const ProductDetailsPage = () => {
                                         px: 3
                                     }}
                                 >
-                                    Post Review
+                                    Оставить отзыв
                                 </Button>
                             </Box>
                         )}
@@ -517,10 +515,10 @@ const ProductDetailsPage = () => {
                             }}>
                                 <ChatBubble sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
                                 <Typography variant="h6">
-                                    No reviews yet
+                                    Отзывов пока нет
                                 </Typography>
                                 <Typography>
-                                    Be the first to share your thoughts!
+                                    Будьте первыми, кто поделится своими мыслями!
                                 </Typography>
                             </Box>
                         )}
