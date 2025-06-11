@@ -11,6 +11,7 @@ import OrderHistoryPage from "./pages/OrderHistoryPage";
 function App() {
     return (
         <BrowserRouter>
+            <div style={{height:'100px'}}/>
             { localStorage.getItem("token") &&
                 <Header/>
             }
@@ -26,7 +27,7 @@ function App() {
                     </> :
                     <>
                         <Route path="/login" element={<AuthPage/>}/>
-                        <Route path="/register" element={<RegisterPage/>}/>
+                        {/*<Route path="/register" element={<RegisterPage/>}/>*/}
 
                         <Route path="*" element={<Navigate to="/login" />} />
                     </>

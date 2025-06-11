@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
     Container,
     Card,
-    CardContent,
     Typography,
     Box,
     Chip,
@@ -14,147 +13,272 @@ import {
     Select,
     FormControl,
     InputLabel,
+    Skeleton,
+    Stack,
+    Avatar,
+    Paper, CardContent
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { getAllOrders, updateOrderStatus } from "../api/Api"; // Предположим, что есть метод updateOrderStatus
+import {
+    ExpandMore,
+    LocalShipping,
+    CheckCircle,
+    Cancel,
+    ShoppingBag,
+    CalendarToday,
+    Phone,
+    LocationOn,
+    MonetizationOn
+} from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
+import { getAllOrders, updateOrderStatus } from "../api/Api";
 
-// Функция для перевода статуса на русский
-const translateStatus = (status) => {
-    switch (status) {
-        case "CREATED":
-            return "Создан";
-        case "DELIVERED":
-            return "Доставлен";
-        case "CANCELLED":
-            return "Отменен";
-        case "SHIPPED":
-            return "Отправлен";
-        default:
-            return status;
+// Стилизованные компоненты
+const OrderCard = styled(Card)(({ theme }) => ({
+    borderRadius: '16px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
+    transition: 'all 0.3s ease',
+    marginBottom: theme.spacing(3),
+    '&:hover': {
+        boxShadow: '0 12px 28px rgba(0,0,0,0.1)',
+        transform: 'translateY(-2px)'
     }
-};
+}));
 
-const calculateTotalPrice = (order) => {
-    return order.orderItems.reduce((total, item) => {
-        return total + item.price * item.quantity;
-    }, 0);
-};
+const StatusChip = styled(Chip)(({ theme, status }) => ({
+    fontWeight: 600,
+    borderRadius: '12px',
+    padding: theme.spacing(0.5),
+    backgroundColor:
+        status === 'DELIVERED' ? 'rgba(56, 142, 60, 0.1)' :
+            status === 'SHIPPED' ? 'rgba(25, 118, 210, 0.1)' :
+                status === 'CANCELLED' ? 'rgba(211, 47, 47, 0.1)' : 'rgba(158, 158, 158, 0.1)',
+    color:
+        status === 'DELIVERED' ? theme.palette.success.main :
+            status === 'SHIPPED' ? theme.palette.primary.main :
+                status === 'CANCELLED' ? theme.palette.error.main : theme.palette.text.secondary
+}));
 
 const OrderHistoryPage = () => {
-    const isAdmin = useState(localStorage.getItem("is_admin"))
+    const isAdmin = localStorage.getItem("is_admin") === "true";
     const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getAllOrders().then((data) => setOrders(data));
+        getAllOrders()
+            .then((data) => {
+                setOrders(data);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
     }, []);
 
-    // Обработчик изменения статуса заказа
+    const translateStatus = (status) => {
+        const statusMap = {
+            "CREATED": "Создан",
+            "DELIVERED": "Доставлен",
+            "CANCELLED": "Отменён",
+            "SHIPPED": "Отправлен"
+        };
+        return statusMap[status] || status;
+    };
+
+    const getStatusIcon = (status) => {
+        switch(status) {
+            case "DELIVERED": return <CheckCircle fontSize="small" />;
+            case "SHIPPED": return <LocalShipping fontSize="small" />;
+            case "CANCELLED": return <Cancel fontSize="small" />;
+            default: return <ShoppingBag fontSize="small" />;
+        }
+    };
+
+    const calculateTotalPrice = (order) => {
+        return order.orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    };
+
     const handleStatusChange = async (orderId, newStatus) => {
         try {
-            await updateOrderStatus(orderId, newStatus); // Вызов API для обновления статуса
-            setOrders((prevOrders) =>
-                prevOrders.map((order) =>
+            await updateOrderStatus(orderId, newStatus);
+            setOrders(prevOrders =>
+                prevOrders.map(order =>
                     order.id === orderId ? { ...order, status: newStatus } : order
                 )
             );
         } catch (error) {
-            console.error("Ошибка при изменении статуса заказа:", error);
+            console.error("Ошибка при изменении статуса:", error);
         }
     };
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: "bold" }}>
-                История заказов
-            </Typography>
-            {orders.length === 0 ? (
-                <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-                    У вас пока нет заказов.
+    if (loading) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
+                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, mb: 4 }}>
+                    История заказов
                 </Typography>
+                {[...Array(3)].map((_, index) => (
+                    <OrderCard key={index}>
+                        <CardContent>
+                            <Stack spacing={3}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Skeleton width="120px" height={32} />
+                                    <Skeleton width="100px" height={32} />
+                                </Box>
+                                <Skeleton width="80%" height={24} />
+                                <Skeleton width="60%" height={24} />
+                                <Skeleton width="40%" height={32} />
+                                {isAdmin && <Skeleton width="100%" height={56} />}
+                                <Skeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
+                            </Stack>
+                        </CardContent>
+                    </OrderCard>
+                ))}
+            </Container>
+        );
+    }
+
+    return (
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
+            <Typography variant="h4" component="h1" gutterBottom sx={{
+                fontWeight: 800,
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+            }}>
+                <ShoppingBag sx={{ fontSize: '2rem' }} /> История заказов
+            </Typography>
+
+            {orders.length === 0 ? (
+                <Paper elevation={0} sx={{
+                    p: 4,
+                    textAlign: 'center',
+                    borderRadius: 3,
+                    bgcolor: 'background.default'
+                }}>
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                        У вас пока нет заказов
+                    </Typography>
+                    <Typography color="text.secondary">
+                        Здесь будут отображаться все ваши предыдущие заказы
+                    </Typography>
+                </Paper>
             ) : (
                 orders.map((order) => (
-                    <Card key={order.id} sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>
+                    <OrderCard key={order.id}>
                         <CardContent>
-                            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 3
+                            }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                                     Заказ №{order.id}
                                 </Typography>
-                                <Chip
-                                    label={translateStatus(order.status)}
-                                    color={
-                                        order.status === "CREATED"
-                                            ? "primary"
-                                            : order.status === "DELIVERED"
-                                                ? "success"
-                                                : order.status === "CANCELLED"
-                                                    ? "error"
-                                                    : "default"
+                                <StatusChip
+                                    status={order.status}
+                                    label={
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {getStatusIcon(order.status)}
+                                            {translateStatus(order.status)}
+                                        </Box>
                                     }
                                 />
                             </Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                Дата заказа: {new Date(order.createdAt).toLocaleDateString()}
-                            </Typography>
-                            <Typography variant="body1" sx={{ mt: 2 }}>
-                                Адрес доставки: {order.address}
-                            </Typography>
-                            <Typography variant="body1" sx={{ mt: 1 }}>
-                                Телефон: {order.phone}
-                            </Typography>
-                            <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>
-                                Общая стоимость: ${calculateTotalPrice(order).toFixed(2)}
-                            </Typography>
-                            <Divider sx={{ my: 2 }} />
-                            {/* Кнопка изменения статуса (видна только администратору) */}
+
+                            <Stack spacing={2} sx={{ mb: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <CalendarToday color="disabled" />
+                                    <Typography>
+                                        {new Date(order.createdAt).toLocaleDateString('ru-RU', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <LocationOn color="disabled" />
+                                    <Typography>Адрес: {order.address}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Phone color="disabled" />
+                                    <Typography>Телефон: {order.phone}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <MonetizationOn color="disabled" />
+                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                        Итого: {calculateTotalPrice(order).toLocaleString('ru-RU')} ₽
+                                    </Typography>
+                                </Box>
+                            </Stack>
+
                             {isAdmin && (
-                                <FormControl fullWidth sx={{ mt: 2, marginBottom: "30px" }}>
+                                <FormControl fullWidth sx={{ mb: 3 }}>
                                     <InputLabel>Изменить статус</InputLabel>
                                     <Select
                                         value={order.status}
                                         onChange={(e) => handleStatusChange(order.id, e.target.value)}
                                         label="Изменить статус"
+                                        sx={{ borderRadius: '12px' }}
                                     >
                                         <MenuItem value="CREATED">Создан</MenuItem>
                                         <MenuItem value="SHIPPED">Отправлен</MenuItem>
                                         <MenuItem value="DELIVERED">Доставлен</MenuItem>
-                                        <MenuItem value="CANCELLED">Отменен</MenuItem>
+                                        <MenuItem value="CANCELLED">Отменён</MenuItem>
                                     </Select>
                                 </FormControl>
                             )}
-                            <Accordion>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                                        Товары в заказе
+
+                            <Accordion sx={{
+                                boxShadow: 'none',
+                                '&:before': { display: 'none' }
+                            }}>
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Typography sx={{ fontWeight: 600 }}>
+                                        Состав заказа ({order.orderItems.length})
                                     </Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
-                                    {order.orderItems.map((item) => (
-                                        <Box key={item.id} sx={{ mb: 2 }}>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                                <img
-                                                    src={item.product.image}
-                                                    alt={item.product.name}
-                                                    style={{ width: 50, height: 50, borderRadius: 8 }}
-                                                />
-                                                <Box sx={{ flexGrow: 1 }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                                                        {item.product.name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Количество: {item.quantity}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Цена: ${item.price.toFixed(2)}
+                                    <Stack spacing={3}>
+                                        {order.orderItems.map((item) => (
+                                            <Box key={item.id}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    gap: 3,
+                                                    alignItems: 'center'
+                                                }}>
+                                                    <Avatar
+                                                        src={item.product.image}
+                                                        alt={item.product.name}
+                                                        sx={{
+                                                            width: 64,
+                                                            height: 64,
+                                                            borderRadius: '12px'
+                                                        }}
+                                                        variant="rounded"
+                                                    />
+                                                    <Box sx={{ flex: 1 }}>
+                                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                            {item.product.name}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {item.quantity} × {item.price.toLocaleString('ru-RU')} ₽
+                                                        </Typography>
+                                                    </Box>
+                                                    <Typography sx={{ fontWeight: 600 }}>
+                                                        {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
                                                     </Typography>
                                                 </Box>
+                                                <Divider sx={{ my: 2 }} />
                                             </Box>
-                                            <Divider sx={{ my: 2 }} />
-                                        </Box>
-                                    ))}
+                                        ))}
+                                    </Stack>
                                 </AccordionDetails>
                             </Accordion>
                         </CardContent>
-                    </Card>
+                    </OrderCard>
                 ))
             )}
         </Container>

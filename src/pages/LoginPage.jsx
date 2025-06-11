@@ -1,171 +1,257 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Container, Paper, Grid, IconButton } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { signIn } from "../api/Api";
-import logoUrl from '../logo.svg';
-import {useNavigate} from "react-router-dom";
+import {
+    Box,
+    TextField,
+    Button,
+    Typography,
+    Container,
+    Paper,
+    Avatar,
+    Tabs,
+    Tab,
+    Snackbar,
+    Alert,
+    InputAdornment,
+    IconButton,
+    Divider,
+    styled
+} from '@mui/material';
+import {
+    LockOutlined,
+    PersonOutline,
+    EmailOutlined,
+    Visibility,
+    VisibilityOff,
+    Fingerprint,
+    Login,
+    HowToReg
+} from '@mui/icons-material';
+import { signIn, signUp } from "../api/Api";
+import { motion } from "framer-motion";
+
+// Стилизованные компоненты
+const GlassPaper = styled(Paper)(({ theme }) => ({
+    borderRadius: '24px',
+    backdropFilter: 'blur(16px)',
+    background: 'rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
+    position: 'relative',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
+    }
+}));
+
+const AuthButton = styled(Button)(({ theme }) => ({
+    borderRadius: '12px',
+    padding: '12px 24px',
+    fontWeight: 700,
+    textTransform: 'none',
+    fontSize: '1rem',
+    boxShadow: 'none',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)',
+    }
+}));
 
 const AuthPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [tabIndex, setTabIndex] = useState(0);
+    const [formData, setFormData] = useState({ username: '', password: '', email: '' });
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
-    const navigate = useNavigate()
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-    const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    const handleSignIn = async (e) => {
-        e.preventDefault();
-        if (!email || !password) {
-            setError('Email и пароль обязательны');
-            return;
-        }
+    const handleSubmit = async () => {
         try {
-            const credentials = { email, password };
-            const data = await signIn(credentials);
-            localStorage.setItem("token", data.accessToken)
-            localStorage.setItem("username", data.username)
-            localStorage.setItem("userId", data.userId)
-            localStorage.setItem("is_admin", data.isAdmin)
-            window.location.reload();
-        } catch (err) {
-            setError('Неверный email или пароль');
+            const data = tabIndex === 0
+                ? await signIn({ email: formData.username, password: formData.password })
+                : await signUp(formData);
+
+            localStorage.setItem("token", data.accessToken);
+            localStorage.setItem("username", data.username);
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("is_admin", data.isAdmin);
+
+            setSnackbar({
+                open: true,
+                message: tabIndex === 0 ? 'Вход выполнен успешно!' : 'Регистрация завершена!',
+                severity: 'success'
+            });
+
+            setTimeout(() => window.location.reload(), 1500);
+
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: 'Ошибка: ' + (error.response?.data?.message || 'Не удалось выполнить операцию'),
+                severity: 'error'
+            });
         }
     };
 
+    const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+    const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh',
-                backgroundColor: '#f4f6f9',  // Background color for the entire screen
-            }}
-        >
-            <Paper
-                elevation={6}
-                sx={{
-                    padding: 4,
-                    width: '100%',
-                    maxWidth: '400px',
-                    borderRadius: '12px', // Rounded corners
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', // Enhanced shadow
-                }}
+        <Container maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
             >
-                <Box sx={{ textAlign: 'center', marginBottom: 3 }}>
-                    {/* Logo */}
-                    <img
-                        src={logoUrl}
-                        alt="Logo"
-                        style={{
-                            width: '150px',
-                            marginBottom: '20px',
-                            transition: 'transform 0.3s ease-in-out',
-                        }}
-                        onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                    />
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
-                        Вход в систему
-                    </Typography>
-                </Box>
+                <GlassPaper elevation={10}>
+                    <Box sx={{ p: 4 }}>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            <Avatar sx={{
+                                bgcolor: 'primary.main',
+                                width: 64,
+                                height: 64,
+                                mb: 3
+                            }}>
+                                <LockOutlined sx={{ fontSize: 32 }} />
+                            </Avatar>
 
-                {error && (
-                    <Typography color="error" variant="body2" align="center" sx={{ marginBottom: 3 }}>
-                        {error}
-                    </Typography>
-                )}
-
-                <Box component="form" noValidate onSubmit={handleSignIn}>
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                borderRadius: '8px',  // Rounded input fields
-                            },
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                            },
-                        }}
-                    />
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Пароль"
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton onClick={handleClickShowPassword} edge="end">
-                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            ),
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                borderRadius: '8px',  // Rounded input fields
-                            },
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: '#3f51b5',
-                                },
-                            },
-                        }}
-                    />
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        sx={{
-                            marginTop: 3,
-                            padding: '10px',
-                            fontWeight: 'bold',
-                            borderRadius: '20px',
-                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', // Soft shadow
-                            '&:hover': {
-                                boxShadow: '0 6px 15px rgba(0, 0, 0, 0.15)',
-                            },
-                        }}
-                    >
-                        Войти
-                    </Button>
-
-                    <Grid container justifyContent="flex-end" sx={{ marginTop: 3 }}>
-                        <Grid item>
-                            <Typography variant="body2" color="text.secondary">
-                                Нет аккаунта? <Button onClick={() => { navigate("/register") }}>Зарегистрироваться</Button>
+                            <Typography variant="h4" sx={{
+                                fontWeight: 800,
+                                mb: 2,
+                                background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                {tabIndex === 0 ? 'Вход в систему' : 'Регистрация'}
                             </Typography>
-                        </Grid>
-                    </Grid>
-                </Box>
-            </Paper>
-        </Box>
+
+                            <Tabs
+                                value={tabIndex}
+                                onChange={(_, newValue) => setTabIndex(newValue)}
+                                centered
+                                sx={{ mb: 3 }}
+                                TabIndicatorProps={{
+                                    style: {
+                                        backgroundColor: '#2196f3',
+                                        height: '3px'
+                                    }
+                                }}
+                            >
+                                <Tab label="Вход" icon={<Login />} iconPosition="start" sx={{ minWidth: 120 }} />
+                                <Tab label="Регистрация" icon={<HowToReg />} iconPosition="start" sx={{ minWidth: 120 }} />
+                            </Tabs>
+
+                            <Box width="100%" mb={3}>
+                                <TextField
+                                    fullWidth
+                                    label="Имя пользователя"
+                                    name="username"
+                                    variant="outlined"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    sx={{ mb: 2 }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <PersonOutline color="primary" />
+                                            </InputAdornment>
+                                        ),
+                                        sx: { borderRadius: '12px' }
+                                    }}
+                                />
+
+                                {tabIndex === 1 && (
+                                    <TextField
+                                        fullWidth
+                                        label="Email"
+                                        name="email"
+                                        variant="outlined"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        sx={{ mb: 2 }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <EmailOutlined color="primary" />
+                                                </InputAdornment>
+                                            ),
+                                            sx: { borderRadius: '12px' }
+                                        }}
+                                    />
+                                )}
+
+                                <TextField
+                                    fullWidth
+                                    label="Пароль"
+                                    name="password"
+                                    type={showPassword ? "text" : "password"}
+                                    variant="outlined"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Fingerprint color="primary" />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={togglePasswordVisibility}
+                                                    edge="end"
+                                                >
+                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                        sx: { borderRadius: '12px' }
+                                    }}
+                                />
+                            </Box>
+
+                            <AuthButton
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                onClick={handleSubmit}
+                                size="large"
+                                sx={{ mb: 2 }}
+                            >
+                                {tabIndex === 0 ? 'Войти' : 'Зарегистрироваться'}
+                            </AuthButton>
+                        </Box>
+                    </Box>
+                </GlassPaper>
+            </motion.div>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={handleCloseSnackbar}
+                    severity={snackbar.severity}
+                    sx={{
+                        width: '100%',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </Container>
     );
 };
 

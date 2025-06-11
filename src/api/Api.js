@@ -8,7 +8,7 @@ const getToken = () => {
 // 1. **Sign Up** - Register a new user
 const signUp = async (userData) => {
     try {
-        const response = await axios.post('https://spotdiff.ru/alum-trade-api/users/security/sign-up', userData);
+        const response = await axios.post('https://spotdiff.ru/auto-part-xpert-api/users/security/sign-up', userData);
         return response.data;
     } catch (error) {
         console.error('Error signing up:', error);
@@ -19,7 +19,7 @@ const signUp = async (userData) => {
 // 2. **Sign In** - User login
 const signIn = async (credentials) => {
     try {
-        const response = await axios.post('https://spotdiff.ru/alum-trade-api/users/security/sign-in', credentials);
+        const response = await axios.post('https://spotdiff.ru/auto-part-xpert-api/users/security/sign-in', credentials);
         return response.data;
     } catch (error) {
         console.error('Error signing in:', error);
@@ -32,7 +32,7 @@ const productAddToCart = async (productId, quantity) => {
     const token = getToken();
     try {
         const response = await axios.post(
-            `https://spotdiff.ru/alum-trade-api/base/products/${productId}/cart?quantity=${quantity}`,
+            `https://spotdiff.ru/auto-part-xpert-api/base/products/${productId}/cart?quantity=${quantity}`,
             {},
             {
                 headers: {
@@ -52,7 +52,7 @@ const updateCartQuantity = async (productId, quantity) => {
     const token = getToken();
     try {
         const response = await axios.put(
-            `https://spotdiff.ru/alum-trade-api/base/products/${productId}/cart?quantity=${quantity}`,
+            `https://spotdiff.ru/auto-part-xpert-api/base/products/${productId}/cart?quantity=${quantity}`,
             {},
             {
                 headers: {
@@ -71,7 +71,7 @@ const updateFavorite = async (productId) => {
     const token = getToken();
     try {
         const response = await axios.post(
-            `https://spotdiff.ru/alum-trade-api/base/products/${productId}/favorite`,
+            `https://spotdiff.ru/auto-part-xpert-api/base/products/${productId}/favorite`,
             {},
             {
                 headers: {
@@ -91,7 +91,7 @@ const createProductReview = async (productId, rating, comment) => {
     const token = getToken();
     try {
         const response = await axios.post(
-            `https://spotdiff.ru/alum-trade-api/base/products/${productId}/review?rating=${rating}&comment=${comment}`,
+            `https://spotdiff.ru/auto-part-xpert-api/base/products/${productId}/review?rating=${rating}&comment=${comment}`,
             {},
             {
                 headers: {
@@ -110,7 +110,7 @@ const createProductReview = async (productId, rating, comment) => {
 const getAllProducts = async () => {
     const token = getToken();
     try {
-        const response = await axios.get('https://spotdiff.ru/alum-trade-api/base/products', {
+        const response = await axios.get('https://spotdiff.ru/auto-part-xpert-api/base/products', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -126,7 +126,7 @@ const getAllProducts = async () => {
 const getProductById = async (productId) => {
     const token = getToken();
     try {
-        const response = await axios.get(`https://spotdiff.ru/alum-trade-api/base/products/${productId}`, {
+        const response = await axios.get(`https://spotdiff.ru/auto-part-xpert-api/base/products/${productId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -142,7 +142,7 @@ const getProductById = async (productId) => {
 const getAllOrders = async () => {
     const token = getToken();
     try {
-        const response = await axios.get('https://spotdiff.ru/alum-trade-api/base/orders', {
+        const response = await axios.get('https://spotdiff.ru/auto-part-xpert-api/base/orders', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -159,7 +159,7 @@ const createOrder = async (address, phone) => {
     const token = getToken();
     try {
         const response = await axios.post(
-            'https://spotdiff.ru/alum-trade-api/base/orders',
+            'https://spotdiff.ru/auto-part-xpert-api/base/orders',
             {},
             {
                 params: {
@@ -183,7 +183,7 @@ const updateOrderStatus = async (orderId, status) => {
     const token = getToken();
     try {
         const response = await axios.patch(
-            `https://spotdiff.ru/alum-trade-api/base/orders/${orderId}`,
+            `https://spotdiff.ru/auto-part-xpert-api/base/orders/${orderId}`,
             {},
             {
                 params: {
@@ -205,7 +205,7 @@ const updateOrderStatus = async (orderId, status) => {
 const getAllCategories = async () => {
     const token = getToken();
     try {
-        const response = await axios.get('https://spotdiff.ru/alum-trade-api/base/categories', {
+        const response = await axios.get('https://spotdiff.ru/auto-part-xpert-api/base/categories', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -221,7 +221,7 @@ const getAllCategories = async () => {
 const getAllCarts = async () => {
     const token = getToken();
     try {
-        const response = await axios.get('https://spotdiff.ru/alum-trade-api/base/carts', {
+        const response = await axios.get('https://spotdiff.ru/auto-part-xpert-api/base/carts', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
