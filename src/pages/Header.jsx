@@ -104,7 +104,7 @@ const Header = () => {
                                 fontSize: { xs: '1.25rem', md: '1.5rem' }
                             }}
                         >
-                            AlumTrade
+                            AutoPart
                         </FloatingLogo>
 
                     </Box>

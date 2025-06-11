@@ -156,7 +156,7 @@ const MainPage = () => {
                 }
             }}>
                 <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800, position: "relative" }}>
-                    Добро пожаловать в AlumTrade
+                    Добро пожаловать в AutoPart
                 </Typography>
                 <Typography variant="h6" sx={{ maxWidth: 800, mx: "auto", opacity: 0.9, position: "relative" }}>
                     Откройте для себя лучшие товары по выгодным ценам с бесплатной доставкой от 5000 ₽
